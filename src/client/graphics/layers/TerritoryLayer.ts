@@ -214,13 +214,21 @@ export class TerritoryLayer implements Layer {
       numToRender--;
       const tile = this.tileToRenderQueue.pop().tile;
       this.paintTerritory(tile);
+      const isAttacking = !!this.game
+        .myPlayer()
+        ?.incomingAttacks()
+        ?.find((a) => a?.attackerID === this.game.owner(tile)?.smallID());
       for (const neighbor of this.game.neighbors(tile)) {
-        this.paintTerritory(neighbor, true);
+        this.paintTerritory(neighbor, true, isAttacking);
       }
     }
   }
 
-  paintTerritory(tile: TileRef, isBorder: boolean = false) {
+  paintTerritory(
+    tile: TileRef,
+    isBorder: boolean = false,
+    isAttacking = false,
+  ) {
     if (isBorder && !this.game.hasOwner(tile)) {
       return;
     }
@@ -250,10 +258,15 @@ export class TerritoryLayer implements Layer {
           255,
         );
       } else {
+        const isAttacker =
+          isAttacking &&
+          this.game.owner(tile)?.smallID() === this.game.myPlayer()?.smallID();
         this.paintCell(
           this.game.x(tile),
           this.game.y(tile),
-          this.theme.borderColor(owner.info()),
+          isAttacker
+            ? colord({ r: 255, g: 0, b: 0 })
+            : this.theme.borderColor(owner.info()),
           255,
         );
       }

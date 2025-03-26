@@ -372,6 +372,41 @@ export class NameLayer implements Layer {
       existingTarget.remove();
     }
 
+    function lerp(a: number, b: number, alpha: number) {
+      return a + alpha * (b - a);
+    }
+
+    // Target icon
+    const existingAttackTarget = iconsDiv.querySelector(
+      '[data-icon="attack-target"]',
+    );
+    if (
+      myPlayer != null &&
+      new Set(myPlayer.incomingAttacks().map((a) => a.attackerID)).has(
+        render.player.smallID(),
+      )
+    ) {
+      if (!existingAttackTarget) {
+        const icon = this.createIconElement(
+          this.traitorIconImage.src,
+          iconSize,
+          "attack-target",
+          true,
+        );
+        const ax = myPlayer.nameLocation().x;
+        const ay = myPlayer.nameLocation().y;
+        const bx = render.player.nameLocation().x;
+        const by = render.player.nameLocation().y;
+
+        const length = Math.hypot(by - ay, bx - ax);
+        const deg = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI;
+        icon.style.transform = `translate(${lerp(ax, bx, 0.5) - render.location.x}px, ${lerp(ay, ay, 0.5) - render.location.y}px) translate(-50%, -50%) scale(${1})`;
+        iconsDiv.appendChild(icon);
+      }
+    } else if (existingAttackTarget) {
+      existingAttackTarget.remove();
+    }
+
     // Emoji handling
     const existingEmoji = iconsDiv.querySelector('[data-icon="emoji"]');
     const emojis = render.player
